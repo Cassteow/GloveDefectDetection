@@ -226,7 +226,7 @@ function ExitButton_Callback(hObject, eventdata, handles)
 % hObject    handle to ExitButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-close(glove_defect_detection);
+close(cloth_glove_defect_detection);
 
 
 % --- Executes on selection change in defectSelect.
