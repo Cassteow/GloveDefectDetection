@@ -118,70 +118,90 @@ glove_img = get(input, 'CData');
                     hueImg= cloth_hsv(:,:,1);
                     saturationImg = cloth_hsv(:,:,2); 
                     valueImg = cloth_hsv(:,:,3);
-                    % Find thresholds of HSV 
+                    % Find thresholds of HSV for Opening Detection
                     hueThresholdLow = 0;
                     hueThresholdHigh = 0.14; %graythresh(hueImg);
-                    saturationThresholdLow = 0.42; %graythresh(saturationImg);
+                    saturationThresholdLow = 0.75; %graythresh(saturationImg);
                     saturationThresholdHigh = 1.0;
-                    valueThresholdLow = 0.33; %graythresh(valueImg);
-                    valueThresholdHigh = 1.0;
+                    valueThresholdLow = 0.45; %graythresh(valueImg);
+                    valueThresholdHigh = 0.6;
             
 
-                    % Threshold the hue channel to identify pixels with a hue value in the range of skin colors
+                    % Threshold the hue channel to identify pixels with a hue value in the range of glove opening colors
                     hueMask = (hueImg >= hueThresholdLow) & (hueImg <= hueThresholdHigh);
                     saturationMask = (saturationImg >= saturationThresholdLow) & (saturationImg <= saturationThresholdHigh);
                     valueMask = (valueImg >= valueThresholdLow) & (valueImg <= valueThresholdHigh);
-                    skinmask = uint8(hueMask & saturationMask & valueMask);
 
-                    OSShnobord = imclearborder(skinmask,4);
+                    openmask = uint8(hueMask & saturationMask & valueMask);
+                    smallestAcceptableArea = 50; % Keep areas only if they're bigger than this.
+                    openmask = uint8(bwareaopen(openmask,smallestAcceptableArea));
+                    openmask_clearborder = imclearborder(openmask,4);
                     %figure(2), subplot(2,2,2),imshow(OSShnobord),title('no border');
          
-                    OSEh = double(bwmorph(OSShnobord,'erode',3));
-                    OSDh = double(bwmorph(OSEh,'dilate',5));
-                    OSBWnobord = imclearborder(OSDh,4);
+                    openmask_erode = double(bwmorph(openmask_clearborder,'erode',3));
+                    openmask_dilate = double(bwmorph(openmask_erode,'dilate',5));
+                    openmask_clearborder = imclearborder(openmask_dilate,4);
 
                     %figure(2),subplot(2,2,3), imshow(OSBWnobord),title('OSBWnobord dilate erode Image');
                     %figure(2),subplot(2,2,4), imshow(cloth_img),title('Ori Image');
     
-                    [OSBBox, numRegions] = bwlabel(OSBWnobord);
-                    BWfinal = regionprops(OSBBox, 'BoundingBox');
+                    [OpenBBox, numRegions] = bwlabel(openmask_clearborder);
+                    openfinal = regionprops(OpenBBox, 'BoundingBox');
                     disp(numRegions)
                     axis(handles.axes1);
                     imagesc(glove_img);
                     hold on;
-                    for k = 1 : numRegions
-                        OSthisBBox = BWfinal(k).BoundingBox;
-                        rectangle('Position', OSthisBBox, 'EdgeColor', 'r','LineWidth',1);
-                        
+                    if numRegions>0
+                        for k = 1 : numRegions
+                            OPthisBBox = openfinal(k).BoundingBox;
+                            rectangle('Position', OPthisBBox, 'EdgeColor', 'r','LineWidth',1);
+                        end
                     end
-                case 2 %Detect tearing
-                    tear_hsv = rgb2hsv(glove_img);
+                case 2 %Detect stain
+                    stain_hsv = rgb2hsv(glove_img);
                     % Extract the HSV channel values
-                    tear_hue = tear_hsv(:,:,1);
-                    tear_saturate = tear_hsv(:,:,2)*2.5;
-                    tear_value = tear_hsv(:,:,3);
-                    
-                    tear_mask = ((tear_saturate>1)+(tear_saturate<0.58))>0;
-                    tear_complement = imcomplement(tear_mask);
-                    tear_clearborder = imclearborder(tear_complement);
+                    hueImg = stain_hsv(:,:,1);
+                    saturationImg = stain_hsv(:,:,2);
+                    valueImg = stain_hsv(:,:,3);
+
+                    % Find thresholds of HSV for Stain Detection
+                    hueThresholdLow = 0.57;
+		            hueThresholdHigh = 0.72;
+		            saturationThresholdLow = 0.25;
+		            saturationThresholdHigh = 0.5;
+		            valueThresholdLow = 0.35;
+		            valueThresholdHigh = 0.65;
+
+                    % Threshold the hue channel to identify pixels with a hue value in the range of glove opening colors
+                    hueMask = (hueImg >= hueThresholdLow) & (hueImg <= hueThresholdHigh);
+                    saturationMask = (saturationImg >= saturationThresholdLow) & (saturationImg <= saturationThresholdHigh);
+                    valueMask = (valueImg >= valueThresholdLow) & (valueImg <= valueThresholdHigh);
+
+                    stainmask = uint8(hueMask & saturationMask & valueMask);
+                    smallestAcceptableArea = 50; % Keep areas only if they're bigger than this.
+                    stainmask = uint8(bwareaopen(stainmask,smallestAcceptableArea));
+
+                    %tear_complement = imcomplement(tear_mask);
+                    stainmask_clearborder = imclearborder(stainmask);
                     % create structuring element
-                    tear_SE_90 = strel('line',3,90); 
-                    tear_SE_0 = strel('line', 3, 0);
-                    tear_dilate = imdilate(tear_clearborder, [tear_SE_90 tear_SE_0]);
+                    stain_SE_90 = strel('line',3,90); 
+                    stain_SE_0 = strel('line', 3, 0);
+                    stainmask_dilate = imdilate(stainmask_clearborder, [stain_SE_90 stain_SE_0]);
 
-                    tear_double_erode = double(bwmorph(tear_dilate, 'erode', 1));
-                    tear_double_dilate = double(bwmorph(tear_dilate, 'dilate', 10));
-                    tear_double_clearborder = imclearborder(tear_double_dilate, 4);
+                    stainmask_double_erode = double(bwmorph(stainmask_dilate, 'erode', 1));
+                    stainmask_double_dilate = double(bwmorph(stainmask_double_erode, 'dilate', 10));
+                    stainmask_double_clearborder = imclearborder(stainmask_double_dilate, 4);
 
-                    [BoundingBox, numRegions] = bwlabel(tear_double_clearborder);
-                    tear_final = regionprops(BoundingBox, 'BondingBox');
-
+                    [stainBBox, numRegions] = bwlabel(stainmask_double_clearborder);
+                    stain_final = regionprops(stainBBox, 'BoundingBox');
+                    disp(numRegions);
                     axis(handles.axes1);
                     imagesc(glove_img);
                     hold on;
 
                     for k = 1:numRegions
-                        thisBondingBox
+                        stainthisBBox = stain_final(k).BoundingBox;
+                        rectangle('Position', stainthisBBox, 'EdgeColor', 'r','LineWidth',1);
                     end
 
             end
