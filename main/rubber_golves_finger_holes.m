@@ -1,6 +1,6 @@
 function [props, finger_defect, message]=rubber_golves_finger_holes(img)
 oriImg = img;
-
+oriImg=imresize(oriImg, [1920 NaN]);
 %Convert to grayscale
 img = rgb2gray(oriImg);
 
@@ -31,7 +31,7 @@ finger = im2bw(finger);
 finger = bwareaopen(finger,20000);
 
 %separate fingers
-seOpen = strel('disk',15);
+seOpen = strel('disk',35);
 fingerMask = imopen(finger, seOpen);
 
 %Get bounding box and area of the regions
