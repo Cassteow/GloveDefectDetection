@@ -117,6 +117,8 @@ glove_img = get(input, 'CData');
                 end
 
                 handles.messageText.String = message;
+
+                glove_img=imresize(glove_img, [1920 NaN]);
                 
                 axis(handles.axes1);
                 imagesc(glove_img);
@@ -127,6 +129,30 @@ glove_img = get(input, 'CData');
                          rectangle('Position', BB, 'EdgeColor', 'r','LineWidth',1);
                     end
                 end
+
+        case 2 %Detect connected fingers
+            [props, abnormalWidth, message] = rubber_gloves_connected_finger(glove_img);
+
+            if(~isempty(abnormalWidth))
+                message = sprintf('Connected finger detected. \nThe connected finger number: %2d',size(abnormalWidth,1));
+            else
+                message = 'No Connected Finger';
+            end
+
+            handles.messageText.String = message;
+
+            glove_img=imresize(glove_img, [1920 NaN]);
+            
+            axis(handles.axes1);
+            imagesc(glove_img);
+            hold on;
+
+            if(~isempty(abnormalWidth))
+                for i=1:size(abnormalWidth,1)
+                    box = props(abnormalWidth(i,1)).BoundingBox;
+                    rectangle('Position', box, 'EdgeColor', 'r','LineWidth',1);
+                end
+            end
     end
  end
 
