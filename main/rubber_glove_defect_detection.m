@@ -101,60 +101,85 @@ glove_img = get(input, 'CData');
 
 
 % Get the value of the pop-out menu
- if isempty(input)
+    if isempty(input)
         % Display an error message if the axes is empty
         errordlg('Error: You did not load image!','Error Message','modal');
- else
-    switch get(handles.defectSelect, 'value')
-        case 1 %Detect finger holes
+    else
 
-                [props, finger_defect, message] = rubber_golves_finger_holes(glove_img);
+        handles.fingerHolesTxt.String = 'Processing...';
+        handles.connFingerTxt.String = 'Processing...';
+        handles.gloveTearTxt.String = 'Processing...';
+         
+        %Detect finger holes
+        [fingerHolesProps, finger_defect, msgFingerHoles, fingerNum] = rubber_golves_finger_holes(glove_img);
+   
+        %Detect connected finger
+        [conFingerProps, abnormalWidth, msgConFinger] = rubber_gloves_connected_finger(glove_img, fingerNum);
+    
+        %Detect glove tearing
+        [tearProps, tearDefect] = rubber_gloves_tear(glove_img);
 
-                if(~isempty(finger_defect))
-                    message = sprintf('Finger holes detected. \nThe finger holes number: %2d',length(finger_defect));
-                else
-                    message = 'No finger holes';
-                end
+        glove_img=imresize(glove_img, [1920 NaN]);
+    
+        axis(handles.axes1);
+        imagesc(glove_img);
+        hold on;
 
-                handles.messageText.String = message;
+        %Finger holes detection result
+        if(~isempty(finger_defect))
+            msgFingerHoles = sprintf('Finger holes detected. \nThe finger holes number: %2d',length(finger_defect));
+        else
+            msgFingerHoles = 'No finger holes';
+        end
 
-                glove_img=imresize(glove_img, [1920 NaN]);
-                
-                axis(handles.axes1);
-                imagesc(glove_img);
-                hold on;
-                if(~isempty(finger_defect))
-                    for k = 1 : length(finger_defect)
-                         BB = props(finger_defect(k)).BoundingBox;
-                         rectangle('Position', BB, 'EdgeColor', 'r','LineWidth',1);
-                    end
-                end
-
-        case 2 %Detect connected fingers
-            [props, abnormalWidth, message] = rubber_gloves_connected_finger(glove_img);
-
-            if(~isempty(abnormalWidth))
-                message = sprintf('Connected finger detected. \nThe connected finger number: %2d',size(abnormalWidth,1));
-            else
-                message = 'No Connected Finger';
+        handles.fingerHolesTxt.String = msgFingerHoles;
+        
+        %Label finger holes defect
+        if(~isempty(finger_defect))
+            for k = 1 : length(finger_defect)
+                 BB = fingerHolesProps(finger_defect(k)).BoundingBox;
+                 rectangle('Position', BB, 'EdgeColor', 'r','LineWidth',1);
             end
+        end
 
-            handles.messageText.String = message;
+        %Connected finger detection result
+        if(~isempty(abnormalWidth))
+            msgConFinger = sprintf('Connected finger detected. \nThe connected finger number: %2d',size(abnormalWidth,1));
+        else
+            msgConFinger = 'No Connected Finger';
+        end
 
-            glove_img=imresize(glove_img, [1920 NaN]);
-            
-            axis(handles.axes1);
-            imagesc(glove_img);
-            hold on;
-
-            if(~isempty(abnormalWidth))
-                for i=1:size(abnormalWidth,1)
-                    box = props(abnormalWidth(i,1)).BoundingBox;
-                    rectangle('Position', box, 'EdgeColor', 'r','LineWidth',1);
-                end
+        handles.connFingerTxt.String = msgConFinger;
+        
+        %Label connected finger defect
+        if(~isempty(abnormalWidth))
+            for i=1:size(abnormalWidth,1)
+                box = conFingerProps(abnormalWidth(i,1)).BoundingBox;
+                rectangle('Position', box, 'EdgeColor', 'g','LineWidth',1);
             end
+        end
+     
+
+        %Glove tearing detection result
+        if(~isempty(tearDefect))
+            msgConFinger = sprintf('Glove tearing detected. \nThe glove tearing number: %2d',length(tearDefect));
+        else
+            msgConFinger = 'No Glove tearing';
+        end
+
+        handles.gloveTearTxt.String = msgConFinger;
+
+        %Label glove tearing defect
+        if(~isempty(tearDefect))
+            for i=1:length(tearDefect)
+                box = tearProps(tearDefect(i)).BoundingBox;
+                rectangle('Position', box, 'EdgeColor', 'b','LineWidth',1);
+            end
+        end
+
+     
     end
- end
+ 
 
 
 % --- Executes on selection change in defectSelect.
