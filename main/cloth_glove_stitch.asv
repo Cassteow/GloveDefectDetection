@@ -1,0 +1,132 @@
+%function [props, stitchNo] = cloth_glove_stitch(img)
+%img = imread('sample_images\IPPR DARK CLOTH\IPPR DARK CLOTH STITCH\CLOTH STITCH 2.jpg');
+img = imread('sample_images\IPPR DARK CLOTH\IPPR DARK CLOTH STITCH\CLOTH STITCH 5.jpg');
+glove_img = img;
+gray_img = rgb2gray(glove_img);
+filteredImg = medfilt2(gray_img);
+
+% Threshold the image using Otsu's method
+level = graythresh(filteredImg);
+bwImg = imbinarize(filteredImg, level);
+
+% Fill any holes in the binary image
+filledImg = imfill(bwImg, 'holes');
+
+% Get the biggest object
+filledMask = bwareafilt(filledImg, 1);
+propsFilledMask=regionprops(filledMask,'Orientation','Area');
+
+% Get gloves orientation
+gloveOrientation = propsFilledMask.Orientation;
+if gloveOrientation <0
+    gloveOrientation = gloveOrientation*-1;
+end
+
+nhood = ones(9);
+% Get glove smoothed mask
+open = strel(nhood);
+smoothMask = imopen(filledMask, open);
+smoothMask = imopen(smoothMask, open);
+
+palmImg = imopen(filledMask, open);
+figure(2), imshow(palmImg);
+
+
+% Get finger mask
+finger = imsubtract(filledMask,palmImg);
+finger = im2bw(finger);
+finger = bwareaopen(finger,3000);
+open2 = strel('disk',10);
+% Get smoothed finger mask
+largestfingerMask = imopen(finger, open2);
+
+
+% subtract fingers and leaving any possible stitches
+stitch = imsubtract(filledMask,smoothMask);
+stitch = im2bw(stitch);
+
+% remove any small areas
+stitch = bwareaopen(stitch,200);
+[StitchBBox, numRegions] = bwlabel(stitch);
+props = regionprops(StitchBBox, 'BoundingBox');
+figure, imshow(glove_img);
+for k = 1:numRegions
+    StitchThisBox = props(k).BoundingBox;
+    rectangle('Position', StitchThisBox, 'EdgeColor', 'r','LineWidth',1);
+end
+%{
+
+
+
+if numRegions >0
+    for k=1:numRegions
+        % Get finger region orientation
+        fingerOrientation = props(k).Orientation;
+        if fingerOrientation<0
+            fingerOrientation = fingerOrientation*-1;
+        end
+
+        % Compare finger region orientation to gloves orientation
+        diffOrientation = gloveOrientation - fingerOrientation;
+        if diffOrientation <0
+            diffOrientation = diffOrientation*-1;
+        end
+
+        % If difference between angles of finger orientation and gloves orientation >=70, 
+        % considered finger regions too short. Thus, use max feret diameter.
+        if diffOrientation <70
+            width = props(k).MinFeretDiameter;
+            widths = [widths; k width];
+        else
+            width = props(k).MaxFeretDiameter;
+            widths=[widths; k width];
+        end
+    end
+end
+%}
+minWidth = min(fingerWidths(:,2));
+abnormalWidth=[];
+
+
+%Get the abnormal width fingers region
+for k=1:size(fingerWidths,1)
+    if(fingerWidths(k,2)/minWidth >= 1.45)
+        abnormalWidth=[abnormalWidth; fingerWidths(k,1) fingerWidths(k,2)];
+    end
+end
+
+
+
+if(~isempty(abnormalWidth))
+    for k = 1:size(abnormalWidth,1)
+        box = props(abnormalWidth(i,1)).BoundingBox;
+         rectangle('Position', box, 'EdgeColor', 'r','LineWidth',1);
+    end
+end
+
+%{
+stats = regionprops(cc, 'BoundingBox');
+
+figure, imshow(cleanImg);
+hold on;
+for i = 1:length(stats)
+    bb = stats(i).BoundingBox;
+    if bb(3) > 10 && bb(4) > 10 % Filter out small boxes
+        rectangle('Position', bb, 'EdgeColor', 'r', 'LineWidth', 2);
+    end
+end
+hold off;
+
+% Get the bounding boxes of the connected components
+stats = regionprops(cc, 'BoundingBox');
+
+% Draw bounding boxes around the loose threads
+figure; imshow(img); hold on;
+for i = 1:length(stats)
+    bb = stats(i).BoundingBox;
+    if bb(3) > 10 && bb(4) > 10 % Filter out small boxes
+        rectangle('Position', bb, 'EdgeColor', 'r', 'LineWidth', 2);
+    end
+end
+hold off;
+%}
