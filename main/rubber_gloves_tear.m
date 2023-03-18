@@ -97,8 +97,7 @@ skinMask = imgYcbcr(:,:,1) >= skinLower(1) & imgYcbcr(:,:,1) <= skinUpper(1) & .
             imgYcbcr(:,:,2) >= skinLower(2) & imgYcbcr(:,:,2) <= skinUpper(2) & ...
             imgYcbcr(:,:,3) >= skinLower(3) & imgYcbcr(:,:,3) <= skinUpper(3);
 
-%perform closing operation to connect the line
-skinMask = imclose(skinMask, strel('disk', 3));
+
 
 %perform open oeration to clean thin lines
 skinMask = imopen(skinMask, strel('disk', 5));
@@ -107,7 +106,7 @@ skinMask = imopen(skinMask, strel('disk', 5));
 skinMask = imclearborder(skinMask);
 
 %Remove region less than 0.4% of gloves
-skinMask = bwareaopen(skinMask,round(gloveArea * 0.004));
+skinMask = bwareaopen(skinMask,round(gloveArea * 0.005));
 
 tearDefect = [];
 
