@@ -107,55 +107,59 @@ glove_img = get(input, 'CData');
             errordlg('Error: You did not load image!','Error Message','modal');
      else
         clothcover = cloth_glove_detector(glove_img);
-        if (clothcover >= 30)
-            switch get(handles.defectSelect, 'value')
-                case 1 %Detect opening
-                    [openingProps, openingNo] = cloth_glove_opening(glove_img);
+        
+        if (clothcover >= 20)
+            % Opening Detection
+            [openingProps, openingNo] = cloth_glove_opening(glove_img);
 
-                    axis(handles.axes1);
-                    imagesc(glove_img);
-                    hold on;
-                    if openingNo>0
-                        for k = 1 : openingNo
-                            OPthisBBox = openingProps(k).BoundingBox;
-                            rectangle('Position', OPthisBBox, 'EdgeColor', 'r','LineWidth',1);
-                        end
-                    else
-                        set(handles.stainAns,'String',"0");
-                    end
-                    set(handles.openingAns,'String',openingNo);
-                case 2 %Detect stain
-                    [stainProps, stainNo] = cloth_glove_stain(glove_img);
+            % Stain Detection
+            [stainProps, stainNo] = cloth_glove_stain(glove_img);
 
-                    axis(handles.axes1);
-                    imagesc(glove_img);
-                    hold on;
-                    if stainNo>0
-                        for k = 1:numRegions
-                            stainthisBBox = stainProps(k).BoundingBox;
-                            rectangle('Position', stainthisBBox, 'EdgeColor', 'r','LineWidth',1);
-                            set(handles.stainAns,'String',stainNo);
-                        end
-                    else
-                        set(handles.stainAns,'String',"0");
-                    end
-                case 3 % Detect stitches
+            % Thread Detection
+            [threadProps, threadNo] = cloth_glove_stitch(glove_img);
 
+            axis(handles.axes1);
+            imagesc(glove_img);
+            hold on;
+            % Label Opening Defects
+            if openingNo>0
+                for k = 1 : openingNo
+                    OPthisBBox = openingProps(k).BoundingBox;
+                    rectangle('Position', OPthisBBox, 'EdgeColor', 'g','LineWidth',1);
+                end
+                set(handles.openingAns,'String',openingNo);
+            else
+                set(handles.openingAns,'String',"0");
+            end
+            % Label Stain Defects
+            if stainNo >0
+                for k = 1:stainNo
+                    stainthisBBox = stainProps(k).BoundingBox;
+                    rectangle('Position', stainthisBBox, 'EdgeColor', 'r','LineWidth',1);
+                end
+                set(handles.stainAns,'String',stainNo);
+            else
+                set(handles.stainAns,'String',"0");
+            end
+            % Label Loose Thread Defects
+            if threadNo >0
+                for k = 1:threadNo
+                    threadThisBox = threadProps(k).BoundingBox;
+                    rectangle('Position', threadThisBox, 'EdgeColor', 'b','LineWidth',1);
+                end
+                set(handles.threadAns,'String',threadNo);
+            else
+                set(handles.threadAns,'String',"0");
             end
 
+        else
+            % Display an error message if the axes is empty
+            errordlg('Error: Image is not cloth glove!','Error Message','modal');
         end
 
      end
+                 
 
-                   
-                    
-
-
-% --- Executes on button press in btnReset.
-function btnReset_Callback(hObject, eventdata, handles)
-% hObject    handle to btnReset (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 % --- Executes on button press in ExitButton.
@@ -163,24 +167,14 @@ function ExitButton_Callback(hObject, eventdata, handles)
 % hObject    handle to ExitButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+set(handles.openingAns,'String',"");
+set(handles.threadAns,'String',"");
+set(handles.stainAns,'String',"");
+
 close(cloth_glove_defect_detection);
 
 
-% --- Executes on selection change in defectSelect.
-function defectSelect_Callback(hObject, eventdata, handles)
-% hObject    handle to defectSelect (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns defectSelect contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from defectSelect
-
-
-% --- Executes during object creation, after setting all properties.
-function defectSelect_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to defectSelect (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
