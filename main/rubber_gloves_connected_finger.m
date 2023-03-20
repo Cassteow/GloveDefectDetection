@@ -1,5 +1,6 @@
 function [props, abnormalWidth, message]=rubber_gloves_connected_finger(img, fingerNum)
 
+%If finger number is equal or more than 5, there is no connected finger
 if(fingerNum >= 5)
     props=[];
     abnormalWidth=[];
@@ -16,13 +17,10 @@ grayImg = rgb2gray(oriImg);
 %Perform gaussian blurring to reduce noise
 grayImg = imgaussfilt(grayImg,2);
 
-%Create local entrophy of gloves
-E = entropyfilt(grayImg);
-% rescale array values of range from 0 to 1
-Eim = rescale(E);
-
+%Use otsu thresholding
+level = graythresh(grayImg);
 %binarize image
-bwImg = imbinarize(Eim,0.5);
+bwImg = imbinarize(grayImg,level);
 %Remove small object
 bwImg = bwareaopen(bwImg,2000);
 %connect lines
@@ -56,7 +54,7 @@ finger = im2bw(finger);
 finger = bwareaopen(finger,20000);
 
 %separate fingers
-seOpen = strel('disk',35);
+seOpen = strel('disk',15);
 fingerMask = imopen(finger, seOpen);
 
 % Remove skin region
@@ -84,6 +82,8 @@ fingerMask=imopen(fingerMask,se);
 fingerMask = imbinarize(fingerMask);
 %fill the holes in the mask
 fingerMask = imfill(fingerMask, 'holes');
+%remove small object
+fingerMask = bwareaopen(fingerMask, 10000);
 
 %Get bounding box, area, orientation, max and min feret properties of the finger regions
 props=regionprops(fingerMask,'BoundingBox', 'Area', 'Orientation', 'MaxFeretProperties','MinFeretProperties');

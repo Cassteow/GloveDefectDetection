@@ -9,13 +9,10 @@ grayImg = rgb2gray(oriImg);
 %Perform gaussian blurring to reduce noise
 grayImg = imgaussfilt(grayImg,2);
 
-%Create local entrophy of gloves
-E = entropyfilt(grayImg);
-% rescale array values of range from 0 to 1
-Eim = rescale(E);
-
+%Use otsu thresholding
+level = graythresh(grayImg);
 %binarize image
-bwImg = imbinarize(Eim,0.5);
+bwImg = imbinarize(grayImg,level);
 %Remove small object
 bwImg = bwareaopen(bwImg,1000);
 
@@ -105,7 +102,7 @@ skinMask = imopen(skinMask, strel('disk', 5));
 %Remove the border region
 skinMask = imclearborder(skinMask);
 
-%Remove region less than 0.4% of gloves
+%Remove region less than 0.5% of gloves
 skinMask = bwareaopen(skinMask,round(gloveArea * 0.005));
 
 tearDefect = [];
