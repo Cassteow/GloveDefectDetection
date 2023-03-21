@@ -22,7 +22,6 @@ nhood = ones(9);
 open = strel(nhood);
 smoothMask = imopen(filledMask, open);
 
-
 % Subtract from main image and detect any possible stitches
 stitch = imsubtract(filledMask,smoothMask);
 stitch = im2bw(stitch);

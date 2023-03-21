@@ -22,7 +22,7 @@ function varargout = cloth_glove_defect_detection(varargin)
 
 % Edit the above text to modify the response to help cloth_glove_defect_detection
 
-% Last Modified by GUIDE v2.5 16-Mar-2023 09:25:07
+% Last Modified by GUIDE v2.5 21-Mar-2023 18:35:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -106,56 +106,49 @@ glove_img = get(input, 'CData');
             % Display an error message if the axes is empty
             errordlg('Error: You did not load image!','Error Message','modal');
      else
-        clothcover = cloth_glove_detector(glove_img);
-        
-        if (clothcover >= 20)
-            % Opening Detection
-            [openingProps, openingNo] = cloth_glove_opening(glove_img);
+       
+         % Opening Detection
+         [openingProps, openingNo] = cloth_glove_opening(glove_img);
 
-            % Stain Detection
-            [stainProps, stainNo] = cloth_glove_stain(glove_img);
+         % Stain Detection
+         [stainProps, stainNo] = cloth_glove_stain(glove_img);
 
-            % Thread Detection
-            [threadProps, threadNo] = cloth_glove_stitch(glove_img);
+         % Thread Detection
+         [threadProps, threadNo] = cloth_glove_stitch(glove_img);
 
-            axis(handles.axes1);
-            imagesc(glove_img);
-            hold on;
-            % Label Opening Defects
-            if openingNo>0
-                for k = 1 : openingNo
-                    OPthisBBox = openingProps(k).BoundingBox;
-                    rectangle('Position', OPthisBBox, 'EdgeColor', 'g','LineWidth',1);
-                end
-                set(handles.openingAns,'String',openingNo);
-            else
-                set(handles.openingAns,'String',"0");
-            end
-            % Label Stain Defects
-            if stainNo >0
-                for k = 1:stainNo
-                    stainthisBBox = stainProps(k).BoundingBox;
-                    rectangle('Position', stainthisBBox, 'EdgeColor', 'r','LineWidth',1);
-                end
-                set(handles.stainAns,'String',stainNo);
-            else
-                set(handles.stainAns,'String',"0");
-            end
-            % Label Loose Thread Defects
-            if threadNo >0
-                for k = 1:threadNo
-                    threadThisBox = threadProps(k).BoundingBox;
-                    rectangle('Position', threadThisBox, 'EdgeColor', 'b','LineWidth',1);
-                end
-                set(handles.threadAns,'String',threadNo);
-            else
-                set(handles.threadAns,'String',"0");
-            end
-
-        else
-            % Display an error message if the axes is empty
-            errordlg('Error: Image is not cloth glove!','Error Message','modal');
-        end
+         axis(handles.axes1);
+         imagesc(glove_img);
+         hold on;
+         % Label Opening Defects
+         if openingNo>0
+             for k = 1 : openingNo
+                 OPthisBBox = openingProps(k).BoundingBox;
+                 rectangle('Position', OPthisBBox, 'EdgeColor', 'g','LineWidth',1);
+             end
+             set(handles.openingAns,'String',openingNo);
+         else
+             set(handles.openingAns,'String',"0");
+         end
+         % Label Stain Defects
+         if stainNo >0
+             for k = 1:stainNo
+                 stainthisBBox = stainProps(k).BoundingBox;
+                 rectangle('Position', stainthisBBox, 'EdgeColor', 'r','LineWidth',1);
+             end
+             set(handles.stainAns,'String',stainNo);
+         else
+             set(handles.stainAns,'String',"0");
+         end
+         % Label Loose Thread Defects
+         if threadNo >0
+             for k = 1:threadNo
+                 threadThisBox = threadProps(k).BoundingBox;
+                 rectangle('Position', threadThisBox, 'EdgeColor', 'b','LineWidth',1);
+             end
+             set(handles.threadAns,'String',threadNo);
+         else
+             set(handles.threadAns,'String',"0");
+         end
 
      end
                  
@@ -175,9 +168,12 @@ close(cloth_glove_defect_detection);
 
 
 
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
+% --- Executes on button press in btnReturnMain.
+function btnReturnMain_Callback(hObject, eventdata, handles)
+% hObject    handle to btnReturnMain (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Close current interface
+close(cloth_glove_defect_detection);
+% go back to main menu
+IPPR_Main_GDD();

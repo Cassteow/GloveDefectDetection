@@ -22,10 +22,9 @@ saturationMask = (saturationImg >= saturationThresholdLow) & (saturationImg <= s
 valueMask = (valueImg >= valueThresholdLow) & (valueImg <= valueThresholdHigh);
 
 stainmask = uint8(hueMask & saturationMask & valueMask);
-smallestAcceptableArea = 50; % Keep areas only if they're bigger than this.
+smallestAcceptableArea = 20; % Keep areas only if they're bigger than this.
 stainmask = uint8(bwareaopen(stainmask,smallestAcceptableArea));
 
-%tear_complement = imcomplement(tear_mask);
 stainmask_clearborder = imclearborder(stainmask);
 % create structuring element
 stain_SE_90 = strel('line',3,90);
