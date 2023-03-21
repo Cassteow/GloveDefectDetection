@@ -7,13 +7,10 @@ grayImg = rgb2gray(oriImg);
 %Perform gaussian blurring to reduce noise
 grayImg = imgaussfilt(grayImg,1);
 
-%Create local entrophy of gloves
-E = entropyfilt(grayImg);
-% rescale array values of range from 0 to 1
-Eim = rescale(E);
-
+%Use otsu thresholding
+level = graythresh(grayImg);
 %binarize image
-bwImg = imbinarize(Eim,0.5);
+bwImg = imbinarize(grayImg,level);
 %Remove small object
 bwImg = bwareaopen(bwImg,2000);
 
@@ -35,7 +32,7 @@ finger = im2bw(finger);
 finger = bwareaopen(finger,20000);
 
 %separate fingers
-seOpen = strel('disk',35);
+seOpen = strel('disk',15);
 fingerMask = imopen(finger, seOpen);
 
 %Get bounding box and area of the regions
