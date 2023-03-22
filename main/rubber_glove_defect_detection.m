@@ -219,5 +219,7 @@ function returnBtn_Callback(hObject, eventdata, handles)
 % hObject    handle to returnBtn (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+% Close current interface
 close(rubber_glove_defect_detection);
+% go back to main menu
 IPPR_Main_GDD();

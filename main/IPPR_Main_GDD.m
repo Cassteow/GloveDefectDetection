@@ -22,7 +22,7 @@ function varargout = IPPR_Main_GDD(varargin)
 
 % Edit the above text to modify the response to help IPPR_Main_GDD
 
-% Last Modified by GUIDE v2.5 21-Mar-2023 19:11:52
+% Last Modified by GUIDE v2.5 21-Mar-2023 22:40:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -96,3 +96,10 @@ function exitBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 close(IPPR_Main_GDD);
+
+
+% --- Executes on button press in btnNitrileGlove.
+function btnNitrileGlove_Callback(hObject, eventdata, handles)
+% hObject    handle to btnNitrileGlove (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
