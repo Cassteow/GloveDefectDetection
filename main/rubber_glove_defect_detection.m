@@ -22,7 +22,7 @@ function varargout = rubber_glove_defect_detection(varargin)
 
 % Edit the above text to modify the response to help rubber_glove_defect_detection
 
-% Last Modified by GUIDE v2.5 16-Mar-2023 10:59:31
+% Last Modified by GUIDE v2.5 21-Mar-2023 19:04:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -212,3 +212,14 @@ function exitBtn_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 close(rubber_glove_defect_detection);
+
+
+% --- Executes on button press in returnBtn.
+function returnBtn_Callback(hObject, eventdata, handles)
+% hObject    handle to returnBtn (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Close current interface
+close(rubber_glove_defect_detection);
+% go back to main menu
+IPPR_Main_GDD();
