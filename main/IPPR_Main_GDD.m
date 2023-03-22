@@ -103,3 +103,5 @@ function btnNitrileGlove_Callback(hObject, eventdata, handles)
 % hObject    handle to btnNitrileGlove (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+close(IPPR_Main_GDD);
+nitrile_glove_defect_detection();
