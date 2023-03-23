@@ -11,10 +11,10 @@ valueImg = cloth_hsv(:,:,3);
 
 % Find thresholds of HSV for Opening Detection
 hueThresholdLow = 0;
-hueThresholdHigh = 0.14; %graythresh(hueImg);
-saturationThresholdLow = 0.75; %graythresh(saturationImg);
+hueThresholdHigh = 0.14; 
+saturationThresholdLow = 0.75; 
 saturationThresholdHigh = 1.0;
-valueThresholdLow = 0.45; %graythresh(valueImg);
+valueThresholdLow = 0.45; 
 valueThresholdHigh = 0.75;
 
 
@@ -31,14 +31,11 @@ openmask = uint8(bwareaopen(openmask,smallestAcceptableArea));
 
 
 openmask_clearborder = imclearborder(openmask,4);
-%figure(2), subplot(2,2,2),imshow(OSShnobord),title('no border');
 
 openmask_erode = double(bwmorph(openmask_clearborder,'erode',3));
 openmask_dilate = double(bwmorph(openmask_erode,'dilate',5));
 openmask_clearborder = imclearborder(openmask_dilate,4);
 
-%figure(2),subplot(2,2,3), imshow(OSBWnobord),title('OSBWnobord dilate erode Image');
-%figure(2),subplot(2,2,4), imshow(cloth_img),title('Ori Image');
 
 [OpenBBox, numRegions] = bwlabel(openmask_clearborder);
 openfinal = regionprops(OpenBBox, 'BoundingBox');
